@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Year 7 Cyber Challenge - v2.2 (Interactive BG)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        /* Windows 95 Aesthetic */
+        :root {
+            --win-gray: #c0c0c0;
+            --win-dark: #808080;
+            --win-light: #ffffff;
+            --win-black: #000000;
+            --win-blue: #000080;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background-color: #000;
+            user-select: none;
+        }
+
+        /* 3JS Canvas */
+        #bg-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* Desktop Interface */
+        #desktop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: calc(100% - 40px); 
+            z-index: 10;
+        }
+
+        /* Desktop Icons */
+        .desktop-icon {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer; 
+            color: white;
+            text-shadow: 1px 1px 2px black;
+            z-index: 15;
+            user-select: none; 
+        }
+        
+        .desktop-icon:hover {
+            background-color: rgba(0, 0, 128, 0.5);
+            border: 1px dotted white;
+        }
+
+        .icon-img {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 5px;
+            image-rendering: pixelated;
+            pointer-events: none; 
+        }
+        
+        .icon-label {
+            text-align: center;
+            pointer-events: none;
+            font-size: 14px;
+            line-height: 1.1;
+        }
+
+        /* Windows */
+        .window {
+            position: absolute;
+            background-color: var(--win-gray);
+            border-top: 2px solid var(--win-light);
+            border-left: 2px solid var(--win-light);
+            border-right: 2px solid var(--win-black);
+            border-bottom: 2px solid var(--win-black);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            z-index: 20;
+            pointer-events: auto;
+            min-width: 350px;
+            min-height: 200px;
+        }
+
+        .title-bar {
+            background-color: var(--win-blue);
+            color: white;
+            padding: 2px 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            cursor: default;
+        }
+
+        .title-bar.active {
+            background: linear-gradient(90deg, var(--win-blue), #1084d0);
+        }
+
+        .close-btn {
+            background-color: var(--win-gray);
+            border: 1px solid;
+            border-color: var(--win-light) var(--win-black) var(--win-black) var(--win-light);
+            width: 16px;
+            height: 14px;
+            font-size: 10px;
+            line-height: 10px;
+            text-align: center;
+            color: black;
+            cursor: pointer;
+        }
+
+        .close-btn:active {
+            border-color: var(--win-black) var(--win-light) var(--win-light) var(--win-black);
+        }
+
+        .window-content {
+            flex-grow: 1;
+            padding: 10px;
+            overflow: auto;
+            color: black;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* Taskbar */
+        #taskbar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background-color: var(--win-gray);
+            border-top: 2px solid var(--win-light);
+            display: flex;
+            align-items: center;
+            padding: 2px;
+            z-index: 100;
+        }
+
+        .start-btn {
+            height: 32px;
+            background-color: var(--win-gray);
+            border: 2px solid;
+            border-color: var(--win-light) var(--win-black) var(--win-black) var(--win-light);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            font-weight: bold;
+            margin-right: 10px;
+            box-shadow: 1px 1px 0px black;
+            cursor: pointer;
+        }
+        
+        .start-btn img {
+            width: 20px;
+            margin-right: 5px;
+        }
+
+        /* Challenge Specifics */
+        .level-input {
+            border: 2px solid #808080;
+            border-style: inset;
+            background: white;
+            padding: 4px;
+            width: 60%;
+            font-family: 'Courier New', Courier, monospace;
+            text-transform: uppercase; 
+        }
+
+        .win95-btn {
+            background-color: var(--win-gray);
+            border: 2px solid;
+            border-color: var(--win-light) var(--win-black) var(--win-black) var(--win-light);
+            padding: 4px 12px;
+            cursor: pointer;
+            font-family: sans-serif;
+            margin-left: 5px;
+        }
+
+        .win95-btn:active {
+            border-color: var(--win-black) var(--win-light) var(--win-light) var(--win-black);
+        }
+
+        .social-post { border: 1px solid #ccc; padding: 10px; background: white; margin-bottom: 10px; }
+        .social-header { display: flex; align-items: center; margin-bottom: 5px; }
+        
+        .invisible-ink {
+            color: white;
+            background: white;
+            user-select: text;
+            cursor: text;
+        }
+        .invisible-ink::selection {
+            background: blue;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Three.js Background -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Desktop Icons -->
+    <div id="desktop">
+        <!-- Level 1: Readme -->
+        <div class="desktop-icon" style="top: 20px; left: 20px;" data-app="readme">
+            <img src="https://img.icons8.com/color/48/000000/txt.png" onerror="this.src='https://placehold.co/32?text=TXT'" class="icon-img">
+            <span class="icon-label">READ_ME.txt</span>
+        </div>
+        
+        <!-- Level 2: Browser -->
+        <div class="desktop-icon" style="top: 120px; left: 20px;" data-app="browser">
+            <img src="https://img.icons8.com/color/48/000000/globe.png" onerror="this.src='https://placehold.co/32?text=NET'" class="icon-img">
+            <span class="icon-label">Netscape</span>
+        </div>
+        
+        <!-- Level 2: Admin Error -->
+        <div class="desktop-icon" style="top: 220px; left: 20px;" data-app="level2">
+            <img src="https://img.icons8.com/color/48/000000/error.png" onerror="this.src='https://placehold.co/32?text=ERR'" class="icon-img">
+            <span class="icon-label">Admin_Tools</span>
+        </div>
+
+        <!-- Level 4: Decoder -->
+        <div class="desktop-icon" style="top: 20px; left: 120px;" data-app="decoder">
+            <img src="https://img.icons8.com/color/48/000000/calculator--v1.png" onerror="this.src='https://placehold.co/32?text=CALC'" class="icon-img">
+            <span class="icon-label">Decoder.exe</span>
+        </div>
+
+        <!-- Level 5: Trash -->
+        <div class="desktop-icon" style="top: 120px; left: 120px;" data-app="trash">
+            <img src="https://img.icons8.com/color/48/000000/recycle-bin.png" onerror="this.src='https://placehold.co/32?text=BIN'" class="icon-img">
+            <span class="icon-label">Recycle Bin</span>
+        </div>
+
+        <!-- Submit App -->
+        <div class="desktop-icon" style="top: 220px; left: 120px;" data-app="submit">
+            <img src="https://img.icons8.com/color/48/000000/console.png" onerror="this.src='https://placehold.co/32?text=CMD'" class="icon-img">
+            <span class="icon-label">Flag_Submit</span>
+        </div>
+    </div>
+
+    <!-- Taskbar -->
+    <div id="taskbar">
+        <div class="start-btn">
+            <img src="https://img.icons8.com/color/48/000000/windows-logo.png">
+            Start
+        </div>
+        <div class="text-sm px-2 border-l-2 border-gray-400 ml-auto">
+            Time: <span id="clock">12:00 PM</span>
+        </div>
+    </div>
+
+    <!-- --- WINDOW CONTENT TEMPLATES --- -->
+    
+    <!-- Level 1: Readme (TRICK QUESTION) -->
+    <div id="content-readme" style="display:none;">
+        <h3 class="font-bold mb-2">INSTRUCTIONS: READ CAREFULLY</h3>
+        <p class="mb-2">To verify you are a human and not a script, you must enter the Operating System Identity.</p>
+        <p class="mb-2"><strong>PROTOCOL 1:</strong> Identify the Release Year and the OS Name.</p>
+        <p class="mb-2 text-red-600 font-bold"><strong>PROTOCOL 2 (CRITICAL):</strong> Due to a database error, you must enter the YEAR first, followed by the NAME.</p>
+        <br>
+        <p><em>Example: If it was Windows 7, you must enter 7WINDOWS.</em></p>
+    </div>
+
+    <!-- Level 2: Inspect Element (NO DIRECT HINT) -->
+    <div id="content-level2" style="display:none;">
+        <h2 class="text-xl font-bold text-red-600 mb-4">SYSTEM ERROR 0x44</h2>
+        <p>Admin Tools failed to load GUI.</p>
+        <p class="mb-4">Debug mode is active in the console.</p>
+        
+        <div class="text-center mt-8">
+            <!-- 
+                DEV_NOTE: The override password is not 'password'.
+                It is: DEV_MASTER
+            -->
+            <button class="win95-btn" onclick="alert('Error: Object 0x44 not found. View Source for details.')">RETRY CONNECTION</button>
+        </div>
+    </div>
+
+    <!-- Level 3: Social Media (MATH & INFERENCE) -->
+    <div id="content-browser" style="display:none;">
+        <div class="bg-gray-200 border-b border-gray-400 p-1 mb-2 text-sm">Address: http://www.social-net.com/user/sysadmin</div>
+        <div class="bg-white h-full p-4 overflow-y-auto border inset">
+            <div class="flex items-center mb-6 border-b pb-4">
+                <div class="w-16 h-16 bg-blue-800 rounded-full flex items-center justify-center text-white text-2xl mr-4">S</div>
+                <div>
+                    <h1 class="text-xl font-bold">Sys_Admin_01</h1>
+                    <p class="text-gray-500">Bio: Tech Enthusiast. Born 1990.</p>
+                </div>
+            </div>
+            
+            <div class="social-post">
+                <div class="social-header">
+                    <span class="font-bold text-blue-800">Sys_Admin_01</span> 
+                    <span class="text-gray-500 text-xs ml-2">Just now</span>
+                </div>
+                <p>Security Update: I changed my password again. It's now my <b>Dog's Name</b> followed by <b>My Age</b> in the year 2000.</p>
+            </div>
+
+            <div class="social-post">
+                <div class="social-header">
+                    <span class="font-bold text-blue-800">Sys_Admin_01</span> 
+                    <span class="text-gray-500 text-xs ml-2">Yesterday</span>
+                </div>
+                <p>Taking <b>Buster</b> to the park. He hates the rain!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Level 4: Decoder (NO HINTS) -->
+    <div id="content-decoder" style="display:none;">
+        <p class="mb-2 font-bold">Base64 Decoder</p>
+        <p class="text-sm mb-4">Status: Waiting for input...</p>
+        
+        <input type="text" id="decoder-input" class="level-input w-full mb-2" placeholder="">
+        <button class="win95-btn" onclick="decodeBase64()">RUN DECODE</button>
+        
+        <div class="mt-4 border-t border-gray-400 pt-2">
+            <p>Output:</p>
+            <p id="decoder-result" class="font-bold text-blue-800 text-lg h-6"></p>
+        </div>
+    </div>
+
+    <!-- Level 5: Recycle Bin (VAGUE) -->
+    <div id="content-trash" style="display:none;">
+        <div class="flex flex-wrap">
+            <div class="flex flex-col items-center m-4 opacity-50 cursor-pointer" onclick="openNote('note1')">
+                <img src="https://img.icons8.com/color/48/000000/txt.png" class="w-8 h-8">
+                <span class="text-xs">dump_log.txt</span>
+            </div>
+            <div class="flex flex-col items-center m-4 opacity-50 cursor-pointer" onclick="openNote('note2')">
+                <img src="https://img.icons8.com/color/48/000000/txt.png" class="w-8 h-8">
+                <span class="text-xs">wiped.txt</span>
+            </div>
+        </div>
+        <p class="mt-4 text-sm text-gray-600">2 Objects.</p>
+    </div>
+    
+    <!-- Helper for trash files -->
+    <div id="content-note1" style="display:none;">
+        <p>System Dump:</p>
+        <br>
+        <p class="bg-black text-green-400 p-2 font-mono select-all">RklSRVXBTEw=</p>
+    </div>
+    
+    <div id="content-note2" style="display:none;">
+        <p>File status: WIPED.</p>
+        <p>Content length: 0 bytes.</p>
+        <br>
+        <div class="border p-2 bg-white">
+            <p>Nothing to see.</p>
+            <p class="invisible-ink">FLAG: GHOST</p>
+            <p>End of file.</p>
+        </div>
+    </div>
+
+    <!-- Flag Submission -->
+    <div id="content-submit" style="display:none;">
+        <p class="mb-4 text-sm">AUTHENTICATION REQUIRED</p>
+        
+        <div class="space-y-3">
+            <div>
+                <label class="text-xs font-bold">1. OS IDENTITY</label><br>
+                <input type="text" id="flag1" class="level-input" placeholder="Format: ??????">
+                <button class="win95-btn" onclick="checkFlag(1)">AUTH</button>
+                <span id="res1"></span>
+            </div>
+
+            <div>
+                <label class="text-xs font-bold">2. ADMIN OVERRIDE</label><br>
+                <input type="text" id="flag2" class="level-input" placeholder="??????">
+                <button class="win95-btn" onclick="checkFlag(2)">AUTH</button>
+                <span id="res2"></span>
+            </div>
+
+            <div>
+                <label class="text-xs font-bold">3. USER PASSKEY</label><br>
+                <input type="text" id="flag3" class="level-input" placeholder="??????">
+                <button class="win95-btn" onclick="checkFlag(3)">AUTH</button>
+                <span id="res3"></span>
+            </div>
+
+            <div>
+                <label class="text-xs font-bold">4. FIREWALL KEY</label><br>
+                <input type="text" id="flag4" class="level-input" placeholder="??????">
+                <button class="win95-btn" onclick="checkFlag(4)">AUTH</button>
+                <span id="res4"></span>
+            </div>
+
+            <div>
+                <label class="text-xs font-bold">5. HIDDEN FILE</label><br>
+                <input type="text" id="flag5" class="level-input" placeholder="??????">
+                <button class="win95-btn" onclick="checkFlag(5)">AUTH</button>
+                <span id="res5"></span>
+            </div>
+        </div>
+        
+        <div id="victory-msg" class="hidden mt-4 bg-blue-800 text-white border-2 border-white p-4 text-center font-bold animate-pulse">
+            ACCESS GRANTED.<br>
+            CLASS DISMISSED.
+        </div>
+    </div>
+
+    <script>
+        // --- Three.js Background ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), alpha: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.position.z = 30;
+
+        const geometry = new THREE.TorusKnotGeometry(10, 3, 100, 16);
+        const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true, transparent: true, opacity: 0.2 });
+        const torusKnot = new THREE.Mesh(geometry, material);
+        scene.add(torusKnot);
+
+        // Binary Rain Effect (Simple Particles)
+        const particlesGeom = new THREE.BufferGeometry();
+        const particlesCount = 800;
+        const posArray = new Float32Array(particlesCount * 3);
+        for(let i=0; i < particlesCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 100;
+        }
+        particlesGeom.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const particlesMat = new THREE.PointsMaterial({size: 0.2, color: 0x00aa00});
+        const particles = new THREE.Points(particlesGeom, particlesMat);
+        scene.add(particles);
+
+        // --- MOUSE INTERACTION ADDED HERE ---
+        let mouseX = 0;
+        let mouseY = 0;
+
+        document.addEventListener('mousemove', (event) => {
+            // Normalize mouse position from -1 to 1
+            mouseX = (event.clientX - window.innerWidth / 2) * 0.002;
+            mouseY = (event.clientY - window.innerHeight / 2) * 0.002;
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const time = Date.now() * 0.0005;
+            
+            // Combine automatic time-based rotation with manual mouse control
+            torusKnot.rotation.x = mouseY + time;
+            torusKnot.rotation.y = mouseX + time;
+            
+            // Particles respond slightly differently for depth effect
+            particles.rotation.y = (mouseX * 0.5) + (time * 0.5);
+            
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // --- Drag & Drop Icons Logic ---
+        let draggedIcon = null;
+        let iconOffset = { x: 0, y: 0 };
+        let isIconDragging = false;
+        let startClickTime = 0;
+
+        document.querySelectorAll('.desktop-icon').forEach(icon => {
+            icon.addEventListener('mousedown', (e) => {
+                draggedIcon = icon;
+                isIconDragging = false;
+                startClickTime = new Date().getTime();
+                
+                const rect = icon.getBoundingClientRect();
+                iconOffset.x = e.clientX - rect.left;
+                iconOffset.y = e.clientY - rect.top;
+                
+                // Visual lift
+                icon.style.zIndex = 100;
+            });
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (draggedIcon) {
+                isIconDragging = true;
+                draggedIcon.style.left = (e.clientX - iconOffset.x) + 'px';
+                draggedIcon.style.top = (e.clientY - iconOffset.y) + 'px';
+            }
+            // Window Dragging
+            if (isWindowDragging && currentWin) {
+                currentWin.style.left = (e.clientX - winOffset.x) + 'px';
+                currentWin.style.top = (e.clientY - winOffset.y) + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            // Icon Drop
+            if (draggedIcon) {
+                const timeDiff = new Date().getTime() - startClickTime;
+                draggedIcon.style.zIndex = 15;
+                
+                // If it was a quick click (not a drag), open the app
+                if (timeDiff < 200 && !isIconDragging) {
+                    const appId = draggedIcon.getAttribute('data-app');
+                    openWindow(appId);
+                }
+                draggedIcon = null;
+            }
+            // Window Drop
+            isWindowDragging = false;
+            currentWin = null;
+        });
+
+
+        // --- Window System ---
+        let zIndexCounter = 20;
+        let activeWindows = {};
+        let isWindowDragging = false;
+        let currentWin = null;
+        let winOffset = { x: 0, y: 0 };
+
+        function openWindow(appId) {
+            let title = "Application";
+            let templateId = `content-${appId}`;
+
+            if (appId === 'note1') title = "Notepad - dump_log.txt";
+            if (appId === 'note2') title = "Notepad - wiped.txt";
+            
+            if (appId === 'readme') title = "Notepad - READ_ME.txt";
+            if (appId === 'browser') title = "Netscape Navigator";
+            if (appId === 'decoder') title = "Base64 Decoder";
+            if (appId === 'trash') title = "Recycle Bin";
+            if (appId === 'submit') title = "Flag Submission";
+            if (appId === 'level2') title = "System Error";
+
+            if (activeWindows[appId]) {
+                const existing = document.getElementById(`win-${appId}`);
+                if(existing) {
+                    existing.style.zIndex = ++zIndexCounter;
+                    return;
+                }
+            }
+
+            const contentTemplate = document.getElementById(templateId);
+            if (!contentTemplate) return;
+
+            const win = document.createElement('div');
+            win.id = `win-${appId}`;
+            win.className = 'window';
+            win.style.left = (50 + Math.random() * 50) + 'px';
+            win.style.top = (50 + Math.random() * 50) + 'px';
+            win.style.zIndex = ++zIndexCounter;
+
+            win.innerHTML = `
+                <div class="title-bar" onmousedown="startWindowDrag(event, '${win.id}')">
+                    <span>${title}</span>
+                    <div class="close-btn" onclick="closeWindow('${appId}')">X</div>
+                </div>
+                <div class="window-content">
+                    ${contentTemplate.innerHTML}
+                </div>
+            `;
+
+            document.body.appendChild(win);
+            activeWindows[appId] = true;
+
+            if (appId === 'decoder') {
+                const btn = win.querySelector('button');
+                const input = win.querySelector('input');
+                const res = win.querySelector('#decoder-result');
+                btn.onclick = function() {
+                    try {
+                        res.innerText = atob(input.value);
+                    } catch(e) {
+                        res.innerText = "Error: Invalid Code";
+                    }
+                };
+            }
+        }
+
+        function closeWindow(appId) {
+            const win = document.getElementById(`win-${appId}`);
+            if (win) {
+                win.remove();
+                delete activeWindows[appId];
+            }
+        }
+
+        function openNote(noteId) {
+            openWindow(noteId);
+        }
+
+        function startWindowDrag(e, winId) {
+            isWindowDragging = true;
+            currentWin = document.getElementById(winId);
+            currentWin.style.zIndex = ++zIndexCounter;
+            
+            const rect = currentWin.getBoundingClientRect();
+            winOffset.x = e.clientX - rect.left;
+            winOffset.y = e.clientY - rect.top;
+
+            document.querySelectorAll('.title-bar').forEach(tb => tb.classList.remove('active'));
+            currentWin.querySelector('.title-bar').classList.add('active');
+            e.stopPropagation(); 
+        }
+
+        // --- Game Logic ---
+        const FLAGS = {
+            1: "95WINDOWS",    // The "Instruction Trap"
+            2: "DEV_MASTER",   // Hidden in comment
+            3: "BUSTER10",     // Buster + (2000-1990)
+            4: "FIREWALL",     // Decoded
+            5: "GHOST"         // Invisible
+        };
+
+        let score = 0;
+        let solved = {1:false, 2:false, 3:false, 4:false, 5:false};
+
+        function checkFlag(level) {
+            const submitWin = document.getElementById('win-submit');
+            if (!submitWin) return;
+
+            const input = submitWin.querySelector(`#flag${level}`);
+            const resSpan = submitWin.querySelector(`#res${level}`);
+            
+            let val = input.value.toUpperCase().trim().replace(/\s/g, '');
+            
+            if (val === FLAGS[level]) {
+                resSpan.innerText = "ACCESS GRANTED";
+                resSpan.className = "text-green-600 font-bold ml-2 text-xs";
+                input.disabled = true;
+                input.style.backgroundColor = "#e6ffe6";
+                
+                if(!solved[level]) {
+                    score++;
+                    solved[level] = true;
+                }
+
+                if(score === 5) {
+                    submitWin.querySelector('#victory-msg').classList.remove('hidden');
+                }
+            } else {
+                // Custom error for the Level 1 trap
+                if (level === 1 && val === "WINDOWS95") {
+                    resSpan.innerText = "ERR: READ INSTRUCTIONS";
+                } else {
+                    resSpan.innerText = "ACCESS DENIED";
+                }
+                resSpan.className = "text-red-600 font-bold ml-2 text-xs";
+                setTimeout(() => { resSpan.innerText = ""; }, 2000);
+            }
+        }
+        
+        setInterval(() => {
+            const now = new Date();
+            let hours = now.getHours();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; 
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('clock').innerText = `${hours}:${minutes} ${ampm}`;
+        }, 1000);
+
+    </script>
+</body>
+</html>
