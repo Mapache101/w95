@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Year 7 Cyber Challenge - v2.2 (Interactive BG)</title>
+    <title>Year 7 Cyber Challenge - v2.4 (Noise & Red Herrings)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
@@ -209,9 +209,39 @@
             background: blue;
             color: white;
         }
+
+        /* BSOD Distraction */
+        #bsod {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0000AA;
+            color: white;
+            font-family: 'Courier New', Courier, monospace;
+            z-index: 9999;
+            padding: 50px;
+            font-weight: bold;
+            font-size: 24px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
+
+    <!-- Fake Blue Screen of Death -->
+    <div id="bsod" onclick="this.style.display='none'">
+        <p>WINDOWS</p>
+        <br>
+        <p>An exception 0E has occurred at 0028:C0011E36 in VxD VMM(01) + 00010E36. This was called from 0028:C001C0D3 in VxD VMM(01) + 0001C0D3.</p>
+        <br>
+        <p>* Press any key to terminate the current application.</p>
+        <p>* Press CTRL+ALT+DEL again to restart your computer. You will lose any unsaved information in all applications.</p>
+        <br>
+        <p>Press any key to continue_</p>
+    </div>
 
     <!-- Three.js Background -->
     <canvas id="bg-canvas"></canvas>
@@ -224,8 +254,14 @@
             <span class="icon-label">READ_ME.txt</span>
         </div>
         
+        <!-- Red Herring File -->
+        <div class="desktop-icon" style="top: 120px; left: 20px;" data-app="policies">
+            <img src="https://img.icons8.com/color/48/000000/txt.png" onerror="this.src='https://placehold.co/32?text=DOC'" class="icon-img">
+            <span class="icon-label">HR_POLICIES.txt</span>
+        </div>
+        
         <!-- Level 2: Browser -->
-        <div class="desktop-icon" style="top: 120px; left: 20px;" data-app="browser">
+        <div class="desktop-icon" style="top: 20px; left: 120px;" data-app="browser">
             <img src="https://img.icons8.com/color/48/000000/globe.png" onerror="this.src='https://placehold.co/32?text=NET'" class="icon-img">
             <span class="icon-label">Netscape</span>
         </div>
@@ -237,19 +273,19 @@
         </div>
 
         <!-- Level 4: Decoder -->
-        <div class="desktop-icon" style="top: 20px; left: 120px;" data-app="decoder">
+        <div class="desktop-icon" style="top: 120px; left: 120px;" data-app="decoder">
             <img src="https://img.icons8.com/color/48/000000/calculator--v1.png" onerror="this.src='https://placehold.co/32?text=CALC'" class="icon-img">
             <span class="icon-label">Decoder.exe</span>
         </div>
 
         <!-- Level 5: Trash -->
-        <div class="desktop-icon" style="top: 120px; left: 120px;" data-app="trash">
+        <div class="desktop-icon" style="top: 220px; left: 120px;" data-app="trash">
             <img src="https://img.icons8.com/color/48/000000/recycle-bin.png" onerror="this.src='https://placehold.co/32?text=BIN'" class="icon-img">
             <span class="icon-label">Recycle Bin</span>
         </div>
 
         <!-- Submit App -->
-        <div class="desktop-icon" style="top: 220px; left: 120px;" data-app="submit">
+        <div class="desktop-icon" style="top: 320px; left: 70px;" data-app="submit">
             <img src="https://img.icons8.com/color/48/000000/console.png" onerror="this.src='https://placehold.co/32?text=CMD'" class="icon-img">
             <span class="icon-label">Flag_Submit</span>
         </div>
@@ -257,7 +293,7 @@
 
     <!-- Taskbar -->
     <div id="taskbar">
-        <div class="start-btn">
+        <div class="start-btn" onclick="document.getElementById('bsod').style.display='block'">
             <img src="https://img.icons8.com/color/48/000000/windows-logo.png">
             Start
         </div>
@@ -267,15 +303,28 @@
     </div>
 
     <!-- --- WINDOW CONTENT TEMPLATES --- -->
-    
-    <!-- Level 1: Readme (TRICK QUESTION) -->
-    <div id="content-readme" style="display:none;">
-        <h3 class="font-bold mb-2">INSTRUCTIONS: READ CAREFULLY</h3>
-        <p class="mb-2">To verify you are a human and not a script, you must enter the Operating System Identity.</p>
-        <p class="mb-2"><strong>PROTOCOL 1:</strong> Identify the Release Year and the OS Name.</p>
-        <p class="mb-2 text-red-600 font-bold"><strong>PROTOCOL 2 (CRITICAL):</strong> Due to a database error, you must enter the YEAR first, followed by the NAME.</p>
+    <!-- Red Herring: HR Policies (Updated with Tutorial) -->
+    <div id="content-policies" style="display:none;">
+        <h3 class="font-bold text-center underline mb-4">COMPANY POLICY v1.2</h3>
+        
+        <p class="mb-2 font-bold bg-blue-800 text-white px-1">SECTION 1: GENERAL CONDUCT</p>
+        <p>1. Employees must wash hands before touching server equipment.</p>
+        <p>2. Eating at the desk is strictly prohibited (especially Cheetos).</p>
+        <p>3. Y2K compliance testing is scheduled for next Tuesday.</p>
         <br>
-        <p><em>Example: If it was Windows 7, you must enter 7WINDOWS.</em></p>
+        
+        <p class="mb-2 font-bold bg-blue-800 text-white px-1">SECTION 2: AUDIT PROCEDURES (TUTORIAL)</p>
+        <p>Junior Agents must follow these steps to secure the system:</p>
+        <ul class="list-disc pl-6 mt-2 space-y-1">
+            <li><strong>EXPLORE:</strong> Click icons to open applications and read files.</li>
+            <li><strong>ANALYZE:</strong> Look for patterns, missing dates, or odd text.</li>
+            <li><strong>DECODE:</strong> Use the Decoder.exe tool for scrambled text.</li>
+            <li><strong>SUBMIT:</strong> Enter found codes in the 'Flag_Submit' app.</li>
+            <li><strong>CAUTION:</strong> Read every instruction twice. Specific formatting is required for authorization.</li>
+        </ul>
+
+        <br>
+        <p><em>Signed, Management.</em></p>
     </div>
 
     <!-- Level 2: Inspect Element (NO DIRECT HINT) -->
@@ -293,7 +342,7 @@
         </div>
     </div>
 
-    <!-- Level 3: Social Media (MATH & INFERENCE) -->
+    <!-- Level 3: Social Media (NOISY VERSION) -->
     <div id="content-browser" style="display:none;">
         <div class="bg-gray-200 border-b border-gray-400 p-1 mb-2 text-sm">Address: http://www.social-net.com/user/sysadmin</div>
         <div class="bg-white h-full p-4 overflow-y-auto border inset">
@@ -301,24 +350,53 @@
                 <div class="w-16 h-16 bg-blue-800 rounded-full flex items-center justify-center text-white text-2xl mr-4">S</div>
                 <div>
                     <h1 class="text-xl font-bold">Sys_Admin_01</h1>
-                    <p class="text-gray-500">Bio: Tech Enthusiast. Born 1990.</p>
+                    <p class="text-gray-500">Bio: Tech Enthusiast. Born 1990. <br>I love 56k modems and pizza.</p>
                 </div>
             </div>
             
+            <!-- Filler Post 1 -->
             <div class="social-post">
                 <div class="social-header">
                     <span class="font-bold text-blue-800">Sys_Admin_01</span> 
-                    <span class="text-gray-500 text-xs ml-2">Just now</span>
+                    <span class="text-gray-500 text-xs ml-2">2 mins ago</span>
+                </div>
+                <p>The cafeteria is serving mystery meat again. I miss home cooking.</p>
+            </div>
+
+            <!-- The CLUE Post -->
+            <div class="social-post">
+                <div class="social-header">
+                    <span class="font-bold text-blue-800">Sys_Admin_01</span> 
+                    <span class="text-gray-500 text-xs ml-2">1 hour ago</span>
                 </div>
                 <p>Security Update: I changed my password again. It's now my <b>Dog's Name</b> followed by <b>My Age</b> in the year 2000.</p>
             </div>
 
+            <!-- Filler Post 2 -->
+            <div class="social-post">
+                <div class="social-header">
+                    <span class="font-bold text-blue-800">Sys_Admin_01</span> 
+                    <span class="text-gray-500 text-xs ml-2">3 hours ago</span>
+                </div>
+                <p>Has anyone seen the new Matrix movie? It's blowing my mind. Computers are the future.</p>
+            </div>
+
+            <!-- The CLUE Post 2 -->
             <div class="social-post">
                 <div class="social-header">
                     <span class="font-bold text-blue-800">Sys_Admin_01</span> 
                     <span class="text-gray-500 text-xs ml-2">Yesterday</span>
                 </div>
                 <p>Taking <b>Buster</b> to the park. He hates the rain!</p>
+            </div>
+
+            <!-- Filler Post 3 -->
+            <div class="social-post">
+                <div class="social-header">
+                    <span class="font-bold text-blue-800">Sys_Admin_01</span> 
+                    <span class="text-gray-500 text-xs ml-2">2 days ago</span>
+                </div>
+                <p>Is Y2K actually going to crash everything? I hope I backed up my floppy disks.</p>
             </div>
         </div>
     </div>
@@ -337,26 +415,54 @@
         </div>
     </div>
 
-    <!-- Level 5: Recycle Bin (VAGUE) -->
+    <!-- Level 5: Recycle Bin (TRASH FILLED) -->
     <div id="content-trash" style="display:none;">
-        <div class="flex flex-wrap">
-            <div class="flex flex-col items-center m-4 opacity-50 cursor-pointer" onclick="openNote('note1')">
+        <div class="flex flex-wrap content-start">
+            
+            <!-- Trash 1 (Filler) -->
+            <div class="flex flex-col items-center m-2 opacity-50 cursor-pointer" onclick="alert('Error: File corrupted.')">
+                <img src="https://img.icons8.com/color/48/000000/file.png" class="w-8 h-8">
+                <span class="text-xs">corrupted.dat</span>
+            </div>
+
+            <!-- Trash 2 (The Clue) -->
+            <div class="flex flex-col items-center m-2 opacity-50 cursor-pointer" onclick="openNote('note1')">
                 <img src="https://img.icons8.com/color/48/000000/txt.png" class="w-8 h-8">
                 <span class="text-xs">dump_log.txt</span>
             </div>
-            <div class="flex flex-col items-center m-4 opacity-50 cursor-pointer" onclick="openNote('note2')">
+
+            <!-- Trash 3 (Filler) -->
+            <div class="flex flex-col items-center m-2 opacity-50 cursor-pointer" onclick="alert('Opening Image Viewer... [FAIL]')">
+                <img src="https://img.icons8.com/color/48/000000/image-file.png" class="w-8 h-8">
+                <span class="text-xs">cat_pic.jpg</span>
+            </div>
+
+            <!-- Trash 4 (Filler) -->
+            <div class="flex flex-col items-center m-2 opacity-50 cursor-pointer" onclick="openNote('note_budget')">
+                <img src="https://img.icons8.com/color/48/000000/xls.png" class="w-8 h-8">
+                <span class="text-xs">budget_99.xls</span>
+            </div>
+
+            <!-- Trash 5 (The Clue) -->
+            <div class="flex flex-col items-center m-2 opacity-50 cursor-pointer" onclick="openNote('note2')">
                 <img src="https://img.icons8.com/color/48/000000/txt.png" class="w-8 h-8">
                 <span class="text-xs">wiped.txt</span>
             </div>
+
+            <!-- Trash 6 (Filler) -->
+            <div class="flex flex-col items-center m-2 opacity-50 cursor-pointer" onclick="openNote('note_meeting')">
+                <img src="https://img.icons8.com/color/48/000000/txt.png" class="w-8 h-8">
+                <span class="text-xs">meeting.txt</span>
+            </div>
         </div>
-        <p class="mt-4 text-sm text-gray-600">2 Objects.</p>
+        <p class="mt-4 text-sm text-gray-600 p-2 border-t border-gray-400">6 Objects found in bin.</p>
     </div>
     
     <!-- Helper for trash files -->
     <div id="content-note1" style="display:none;">
         <p>System Dump:</p>
         <br>
-        <p class="bg-black text-green-400 p-2 font-mono select-all">RklSRVXBTEw=</p>
+        <p class="bg-black text-green-400 p-2 font-mono select-all">RklSRVdBTEw=</p>
     </div>
     
     <div id="content-note2" style="display:none;">
@@ -368,6 +474,20 @@
             <p class="invisible-ink">FLAG: GHOST</p>
             <p>End of file.</p>
         </div>
+    </div>
+
+    <!-- Filler Note contents -->
+    <div id="content-note_budget" style="display:none;">
+        <h4 class="font-bold">Q4 Budget Report</h4>
+        <p>Coffee: $400</p>
+        <p>Floppy Disks: $200</p>
+        <p>Mousepads: $50</p>
+        <p>Total: $650</p>
+    </div>
+
+    <div id="content-note_meeting" style="display:none;">
+        <p>Meeting postponed until Friday.</p>
+        <p>Bring donuts.</p>
     </div>
 
     <!-- Flag Submission -->
@@ -443,7 +563,7 @@
         const particles = new THREE.Points(particlesGeom, particlesMat);
         scene.add(particles);
 
-        // --- MOUSE INTERACTION ADDED HERE ---
+        // --- MOUSE INTERACTION ---
         let mouseX = 0;
         let mouseY = 0;
 
@@ -539,10 +659,14 @@
             let title = "Application";
             let templateId = `content-${appId}`;
 
+            // Custom titles for trash items
             if (appId === 'note1') title = "Notepad - dump_log.txt";
             if (appId === 'note2') title = "Notepad - wiped.txt";
+            if (appId === 'note_budget') title = "Excel - budget_99.xls";
+            if (appId === 'note_meeting') title = "Notepad - meeting.txt";
             
             if (appId === 'readme') title = "Notepad - READ_ME.txt";
+            if (appId === 'policies') title = "Notepad - HR_POLICIES.txt";
             if (appId === 'browser') title = "Netscape Navigator";
             if (appId === 'decoder') title = "Base64 Decoder";
             if (appId === 'trash') title = "Recycle Bin";
