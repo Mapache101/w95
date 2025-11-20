@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Year 7 Cyber Challenge - v2.4 (Noise & Red Herrings)</title>
+    <title>Year 7 Cyber Challenge - v2.5 (Fixes)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
@@ -303,6 +303,17 @@
     </div>
 
     <!-- --- WINDOW CONTENT TEMPLATES --- -->
+    
+    <!-- Level 1: Readme (TRICK QUESTION) -->
+    <div id="content-readme" style="display:none;">
+        <h3 class="font-bold mb-2">INSTRUCTIONS: READ CAREFULLY</h3>
+        <p class="mb-2">To verify you are a human and not a script, you must enter the Operating System Identity.</p>
+        <p class="mb-2"><strong>PROTOCOL 1:</strong> Identify the Release Year and the OS Name.</p>
+        <p class="mb-2 text-red-600 font-bold"><strong>PROTOCOL 2 (CRITICAL):</strong> Due to a database error, you must enter the YEAR first, followed by the NAME.</p>
+        <br>
+        <p><em>Example: If it was Windows 7, you must enter 7 WINDOWS</em></p>
+    </div>
+
     <!-- Red Herring: HR Policies (Updated with Tutorial) -->
     <div id="content-policies" style="display:none;">
         <h3 class="font-bold text-center underline mb-4">COMPANY POLICY v1.2</h3>
@@ -600,12 +611,20 @@
         let iconOffset = { x: 0, y: 0 };
         let isIconDragging = false;
         let startClickTime = 0;
+        
+        // Store initial mouse position for drag sensitivity
+        let startMouseX = 0;
+        let startMouseY = 0;
 
         document.querySelectorAll('.desktop-icon').forEach(icon => {
             icon.addEventListener('mousedown', (e) => {
                 draggedIcon = icon;
                 isIconDragging = false;
                 startClickTime = new Date().getTime();
+                
+                // Store initial position
+                startMouseX = e.clientX;
+                startMouseY = e.clientY;
                 
                 const rect = icon.getBoundingClientRect();
                 iconOffset.x = e.clientX - rect.left;
@@ -618,9 +637,19 @@
 
         document.addEventListener('mousemove', (e) => {
             if (draggedIcon) {
-                isIconDragging = true;
-                draggedIcon.style.left = (e.clientX - iconOffset.x) + 'px';
-                draggedIcon.style.top = (e.clientY - iconOffset.y) + 'px';
+                // Calculate distance moved
+                const moveX = Math.abs(e.clientX - startMouseX);
+                const moveY = Math.abs(e.clientY - startMouseY);
+                
+                // Only start dragging if moved more than 5 pixels
+                if (moveX > 5 || moveY > 5) {
+                    isIconDragging = true;
+                }
+
+                if (isIconDragging) {
+                    draggedIcon.style.left = (e.clientX - iconOffset.x) + 'px';
+                    draggedIcon.style.top = (e.clientY - iconOffset.y) + 'px';
+                }
             }
             // Window Dragging
             if (isWindowDragging && currentWin) {
@@ -636,7 +665,8 @@
                 draggedIcon.style.zIndex = 15;
                 
                 // If it was a quick click (not a drag), open the app
-                if (timeDiff < 200 && !isIconDragging) {
+                // Increased time threshold to 500ms for better usability
+                if (timeDiff < 500 && !isIconDragging) {
                     const appId = draggedIcon.getAttribute('data-app');
                     openWindow(appId);
                 }
@@ -746,11 +776,11 @@
 
         // --- Game Logic ---
         const FLAGS = {
-            1: "95WINDOWS",    // The "Instruction Trap"
-            2: "DEV_MASTER",   // Hidden in comment
-            3: "BUSTER10",     // Buster + (2000-1990)
-            4: "FIREWALL",     // Decoded
-            5: "GHOST"         // Invisible
+            1: "95 WINDOWS",    // The "Instruction Trap"
+            2: "DEV_MASTER",   
+            3: "BUSTER10",     
+            4: "FIREWALL",     
+            5: "GHOST"        
         };
 
         let score = 0;
